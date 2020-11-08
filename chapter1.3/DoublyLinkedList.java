@@ -2,6 +2,7 @@ package chapter1.section3;
 
 
 import javax.xml.soap.Node;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -10,7 +11,7 @@ import java.util.NoSuchElementException;
  *
  * @author ZZY
  */
-public class DoublyLinkedList<E> {
+public class DoublyLinkedList<E> implements Iterable<E> {
     //首结点
     private DoubleNode first;
     //尾结点
@@ -168,18 +169,84 @@ public class DoublyLinkedList<E> {
                     DoubleNode next = current.next;
 
                     //删除 current
-                    E e = current.item;
+                    current.next = null;
+                    current.pre = null;
                     previous.next = next;
                     next.pre = previous;
                     size--;
-                    return e;
+                    return current.item;
                 }
             }
         }
         return null;
     }
 
-    //删除指定元素，以 int 为参数？
+    //删除指定元素，以 int （第几个 Node）为参数？
+    public E remove(int index) {
+        //排除不合理情况
+        if (isEmpty() || index < 1 || index > size) {
+            throw new NoSuchElementException();
+        }
+
+        //删除首尾
+        if (index == 1) {
+            removeFirst();
+        } else if (index == size) {
+            removeLast();
+        }
+
+        //index 小于 size/2 时从 first 开始遍历
+        if (index <= size / 2) {
+            DoubleNode current = first;
+            for (int i = 1; i < index; i++) {
+                current = current.next;
+            }
+            DoubleNode previous = current.pre;
+            DoubleNode next = current.next;
+            current.next = null;
+            current.pre = null;
+            previous.next = next;
+            next.pre = previous;
+            size--;
+            return current.item;
+            //index 大于 size/2 时从 first 开始遍历
+        } else {
+            DoubleNode current = last;
+            for (int i = 0; i < (size - index); i++) {
+                current = current.pre;
+            }
+            DoubleNode previous = current.pre;
+            DoubleNode next = current.next;
+            current.next = null;
+            current.pre = null;
+            previous.next = next;
+            next.pre = previous;
+            size--;
+            return current.item;
+        }
+
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return new DoubleIterator();
+    }
+
+    private class DoubleIterator implements Iterator<E> {
+        DoubleNode current = first;
+
+        @Override
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        @Override
+        public E next() {
+            E e = current.item;
+            current = current.next;
+            return e;
+        }
+    }
 
     /**
      * @author ZZY
@@ -191,5 +258,41 @@ public class DoublyLinkedList<E> {
         private DoubleNode next;
         //前一个结点
         private DoubleNode pre;
+    }
+
+    public static void main(String[] args) {
+        DoublyLinkedList<Integer> list = new DoublyLinkedList<>();
+        list.addLast(1);
+        list.addLast(2);
+        list.addLast(3);
+        list.addLast(4);
+        list.addLast(5);
+        list.addLast(6);
+        list.addLast(7);
+
+        for (Integer i : list
+        ) {
+            System.out.print(i);
+        }
+        System.out.println("");
+        System.out.println(list.size());
+        list.removeLast();
+        for (Integer i : list
+        ) {
+            System.out.print(i);
+        }
+        System.out.println("");
+        list.removeFirst();
+        for (Integer i : list
+        ) {
+            System.out.print(i);
+        }
+        System.out.println("");
+
+        list.remove(3);
+        for (Integer i : list
+        ) {
+            System.out.print(i);
+        }
     }
 }
